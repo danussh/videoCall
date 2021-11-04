@@ -6,12 +6,10 @@ const port = process.env.PORT;
 const DBURL = process.env.DBURL;
 //  const url='mongodb+srv://danussh:danussh1997@cluster0.qbse4.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
 const app = express();
-// const bodyParser = require("body-parser");
 const mongodb = require("mongodb").MongoClient;
 var ObjectId = require("mongodb").ObjectId;
 const cors = require("cors");
 const bcrypt = require("bcrypt");
-// app.use(bodyParser.json());
 app.use(cors({}));
 app.use(express.json());
 const server = http.createServer(app);
@@ -84,10 +82,6 @@ io.on("connection", function (socket) {
   });
 });
 
-// io.on("connection", (socket) => {
-
-// });
-
 app.post("/register", async (req, res) => {
   var user = req.body;
   var hash = await bcrypt.hash(user.password, 10);
@@ -127,7 +121,6 @@ app.post("/login", async (req, res) => {
       });
     }
   } catch (err) {
-    // console.log(err);
     res.status(400).json({ message: "failed" });
   }
 });
@@ -139,7 +132,6 @@ app.get("/registers", async (req, res) => {
     const data = await db.collection("users").find().toArray();
     res.json(data);
   } catch (err) {
-    console.log(err);
     res.json({ message: "failed", err });
   }
 });
