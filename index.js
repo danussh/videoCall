@@ -4,7 +4,6 @@ const http = require("http");
 require("dotenv").config();
 const port = process.env.PORT;
 const DBURL = process.env.DBURL;
-//  const url='mongodb+srv://danussh:danussh1997@cluster0.qbse4.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
 const app = express();
 const mongodb = require("mongodb").MongoClient;
 var ObjectId = require("mongodb").ObjectId;
@@ -46,11 +45,35 @@ io.on("connection", function (socket) {
     });
   });
 
+  socket.on("callSearchUser", async (data) => {
+    const client = await mongodb.connect(DBURL);
+    const db = client.db("VideoCall");
+    const receiver = await db
+      .collection("users")
+      .findOne({ _id: ObjectId(data.userToCall) });
+
+    if (receiver != null) {
+      const sender = await db
+        .collection("users")
+        .findOne({ _id: ObjectId(data.myCall) });
+      if (sender != null) {
+        var message = "Working"
+        io.to(users[receiver._id]).emit("callSearchUser", {
+          signal: data.signalData,
+          from: data.from,
+          name: data.name,
+          message:message
+        });
+      }
+    }
+  });
+
   socket.on("answerCall", (data) => {
+    console.log(data)
     io.to(data.to).emit("callAccepted", data.signal);
   });
   
-  socket.on("connected", function (userId) {
+  socket.on("currentUser", function (userId) {
     console.log("connected");
     users[userId] = socket.id;
   });
@@ -72,10 +95,6 @@ io.on("connection", function (socket) {
           sender.firstName +
           ". Message: " +
           data.message;
-        //   console.log("sender",sender)
-        //   console.log("receiver",receiver)
-        //   console.log(users)
-        // // console.log(users[receiver[0]._id]);
         io.to(users[receiver._id]).emit("messageReceived", message);
       }
     }
@@ -121,7 +140,7 @@ app.post("/login", async (req, res) => {
       });
     }
   } catch (err) {
-    res.status(400).json({ message: "failed" });
+    res.status(500).json({ message: "failed" });
   }
 });
 
