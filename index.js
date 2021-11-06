@@ -14,7 +14,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "https://eager-jang-15b24f.netlify.app",
     methods: ["GET", "POST"],
   },
 });
@@ -47,6 +47,7 @@ io.on("connection", function (socket) {
   });
 
   socket.on("callSearchUser", async (data) => {
+    console.log(users)
     const client = await mongodb.connect(DBURL);
     const db = client.db("VideoCall");
     const receiver = await db
@@ -70,12 +71,12 @@ io.on("connection", function (socket) {
   });
 
   socket.on("answerCall", (data) => {
-    console.log(data)
+    // console.log(data)
     io.to(data.to).emit("callAccepted", data.signal);
   });
   
   socket.on("currentUser", function (userId) {
-    console.log("connected");
+    // console.log("connected");
     users[userId] = socket.id;
   });
   // socket.on("sendEvent") goes here
