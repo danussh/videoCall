@@ -14,7 +14,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: "https://danussh.github.io/video-frontend.com",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });
