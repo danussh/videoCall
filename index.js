@@ -14,7 +14,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "https://vigilant-jones-4bf1bc.netlify.app",
     methods: ["GET", "POST"],
   },
 });
