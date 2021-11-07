@@ -14,7 +14,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: "https://eager-jang-15b24f.netlify.app",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });
@@ -132,8 +132,13 @@ app.post("/login", async (req, res) => {
     if (data) {
       var match = await bcrypt.compare(req.body.password, data.password);
       if (match) {
-        const time = await db.collection("timeLogs").insertOne({...data,time:new Date().toLocaleString()});
-        await client.close();
+        const timelog={
+          time:new Date().toLocaleString(),
+          firstName:data.firstName,
+          email:data.email
+        }
+        await db.collection("timeLogs").insertOne(timelog);
+         await client.close();
         res.json({ message: "login successful", data: data });
       } else {
         res.status(401).json({
@@ -146,6 +151,7 @@ app.post("/login", async (req, res) => {
       });
     }
   } catch (err) {
+    console.log(err)
     res.status(500).json({ message: "failed" });
   }
 });
@@ -170,6 +176,7 @@ app.get("/timelogs", async (req, res) => {
     const client = await mongodb.connect(DBURL);
     const db = client.db("VideoCall");
     const data = await db.collection("timeLogs").find().toArray();
+    await client.close();
     res.json(data);
   } catch (err) {
     res.json({ message: "failed", err });
