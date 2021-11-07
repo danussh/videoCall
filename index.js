@@ -14,12 +14,12 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "https://takeleap.netlify.app",
     methods: ["GET", "POST"],
   },
 });
-// To allow in server https://eager-jang-15b24f.netlify.app
-// To allow in Local "http://localhost:3000/
+// Socket To allow in server https://takeleap.netlify.app/
+// Socket To allow in Local "http://localhost:3000/
 mongodb
   .connect(DBURL)
   .then(() => {
