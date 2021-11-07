@@ -47,7 +47,6 @@ io.on("connection", function (socket) {
   });
 
   socket.on("callSearchUser", async (data) => {
-    console.log(users)
     const client = await mongodb.connect(DBURL);
     const db = client.db("VideoCall");
     const receiver = await db
@@ -59,12 +58,12 @@ io.on("connection", function (socket) {
         .collection("users")
         .findOne({ _id: ObjectId(data.myCall) });
       if (sender != null) {
-        var message = "Working"
+        var message = "Working";
         io.to(users[receiver._id]).emit("callSearchUser", {
           signal: data.signalData,
           from: data.from,
           name: data.name,
-          message:message
+          message: message,
         });
       }
     }
@@ -74,11 +73,11 @@ io.on("connection", function (socket) {
     // console.log(data)
     io.to(data.to).emit("callAccepted", data.signal);
   });
-  
+
   socket.on("currentUser", function (userId) {
-    // console.log("connected");
     users[userId] = socket.id;
   });
+
   // socket.on("sendEvent") goes here
   socket.on("sendEvent", async function (data) {
     const client = await mongodb.connect(DBURL);
@@ -103,6 +102,8 @@ io.on("connection", function (socket) {
   });
 });
 
+// To Register a User
+
 app.post("/register", async (req, res) => {
   var user = req.body;
   var hash = await bcrypt.hash(user.password, 10);
@@ -119,6 +120,8 @@ app.post("/register", async (req, res) => {
   }
 });
 
+// TO Login the Registed User and Get The Registered Time
+
 app.post("/login", async (req, res) => {
   try {
     const client = await mongodb.connect(DBURL);
@@ -126,10 +129,11 @@ app.post("/login", async (req, res) => {
     const data = await db
       .collection("users")
       .findOne({ email: req.body.email });
-    await client.close();
     if (data) {
       var match = await bcrypt.compare(req.body.password, data.password);
       if (match) {
+        const time = await db.collection("timeLogs").insertOne({...data,time:new Date().toLocaleString()});
+        await client.close();
         res.json({ message: "login successful", data: data });
       } else {
         res.status(401).json({
@@ -146,11 +150,26 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// To get the Registerd Users
+
 app.get("/registers", async (req, res) => {
   try {
     const client = await mongodb.connect(DBURL);
     const db = client.db("VideoCall");
     const data = await db.collection("users").find().toArray();
+    res.json(data);
+  } catch (err) {
+    res.json({ message: "failed", err });
+  }
+});
+
+// To get the Time Logs of Logged in  Users
+
+app.get("/timelogs", async (req, res) => {
+  try {
+    const client = await mongodb.connect(DBURL);
+    const db = client.db("VideoCall");
+    const data = await db.collection("timeLogs").find().toArray();
     res.json(data);
   } catch (err) {
     res.json({ message: "failed", err });
